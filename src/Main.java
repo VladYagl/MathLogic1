@@ -14,12 +14,12 @@ public class Main {
         String header = "";
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             header = reader.readLine();
-            String[] headres = header.split(",|\\|-");
-            for (int i = 0; i < header.length() - 1; i++) {
-                if (headres[i].isEmpty()) {
+            String[] headers = header.split(",|\\|-");
+            for (int i = 0; i < headers.length - 1; i++) {
+                if (headers[i].isEmpty()) {
                     break;
                 }
-                suppositions.add(ExpressionParser.parse(headres[i]));
+                suppositions.add(ExpressionParser.parse(headers[i]));
             }
             String line;
             while ((line = reader.readLine()) != null) {

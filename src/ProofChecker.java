@@ -17,10 +17,10 @@ class ProofChecker {
             ExpressionParser.parse("!!A->A")
     };
 
-    private final HashMap<Expression, Integer> suppositions = new HashMap<>();
+    private final HashMap<String, Integer> suppositions = new HashMap<>();
     private ArrayList<Expression> proof;
 
-    private final HashMap<String, Integer> RightExpressions = new HashMap<>();
+    private final HashMap<String, ArrayList<Integer>> RightExpressions = new HashMap<>();
     private final HashMap<String, Integer> proofed = new HashMap<>();
 
     private final HashMap<String, Expression> variables = new HashMap<>();
@@ -30,7 +30,7 @@ class ProofChecker {
     ProofChecker(ArrayList<Expression> suppositions, ArrayList<Expression> proof) {
         int i = 0;
         for (Expression e : suppositions) {
-            this.suppositions.put(e, i++);
+            this.suppositions.put(e.toString(), i++);
         }
         this.proof = proof;
         /*
@@ -70,18 +70,22 @@ class ProofChecker {
     private void addToProofed(Expression expression, Integer number) {
         proofed.put(expression.toString(), number);
         if (expression instanceof Implication) {
-            RightExpressions.put(expression.getRight().toString(), number);
+            String key = expression.getRight().toString();
+            if (!RightExpressions.containsKey(key)) {
+                RightExpressions.put(key, new ArrayList<>());
+            }
+            RightExpressions.get(key).add(number);
         }
     }
 
     private Pair<Integer, Integer> ModusPonens(Expression expression) {
         if (RightExpressions.containsKey(expression.toString())) {
-            int pos = RightExpressions.get(expression.toString());
-            Expression left = proof.get(pos).getLeft();
-            if (proofed.containsKey(left.toString())) {
-                return new Pair<>(pos, proofed.get(left.toString()));
-            } else {
-                return null;
+            ArrayList<Integer> variants = RightExpressions.get(expression.toString());
+            for (Integer pos : variants) {
+                Expression left = proof.get(pos).getLeft();
+                if (proofed.containsKey(left.toString())) {
+                    return new Pair<>(pos, proofed.get(left.toString()));
+                }
             }
         }
         return null;
@@ -95,9 +99,9 @@ class ProofChecker {
             if (axiom != -1) {
                 addToProofed(expression, number);
                 annotations.add("Сх. акс. " + (axiom + 1));
-            } else if (suppositions.containsKey(expression)) {
+            } else if (suppositions.containsKey(expression.toString())) {
                 addToProofed(expression, number);
-                annotations.add("Предп. " + suppositions.get(expression));
+                annotations.add("Предп. " + suppositions.get(expression.toString()));
             } else if (mp != null) {
                 addToProofed(expression, number);
                 annotations.add("М.Р. " + (mp.getValue() + 1) + ", " + (mp.getKey() + 1));
